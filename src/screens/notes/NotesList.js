@@ -14,6 +14,7 @@ import {
   StyleSheet,
   ImageBackground,
   Alert,
+  ScrollView
 } from 'react-native';
 import { collection, addDoc, getDocs } from 'firebase/firestore';
 import NetInfo from '@react-native-community/netinfo';
@@ -54,7 +55,7 @@ const NotesList = ({ route }) => {
 
   const loadNotes = async () => {
     const network = await NetInfo.fetch();
-  
+    console.log('isconnected',network.isConnected);
     if (network.isConnected) {
       try {
         const notesRef = collection(db, 'users', userId, 'notes');
@@ -69,6 +70,7 @@ const NotesList = ({ route }) => {
         getLocalNotes(userId, setNotes);
       }
     } else {
+        
       getLocalNotes(userId, setNotes);
     }
   };
@@ -130,7 +132,8 @@ const NotesList = ({ route }) => {
   
     setTitle('');
     setText('');
-    getLocalNotes(userId, setNotes);
+    loadNotes();
+    // getLocalNotes(userId, setNotes);
 } else {
     Alert.alert('Invalid', 'Please enter valid title and text');
 }
@@ -146,7 +149,7 @@ const NotesList = ({ route }) => {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <View style={styles.container}>
         <View>
@@ -173,42 +176,65 @@ const NotesList = ({ route }) => {
           >
             <Text style={{ color: '#fff' }}>Add Note</Text>
           </TouchableOpacity>
-
-          <Modal
-        visible={isModalVisible}
-        animationType="slide"
-         transparent={true}
->
+          <Modal visible={isModalVisible} animationType="slide" transparent={true}>
   <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
     <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: '#00000055' }}>
-        <View
-          style={{
-            height: screenHeight * 0.75,
-            backgroundColor: '#fff',
-            padding: 20,
-            borderTopLeftRadius: 20,
-            borderTopRightRadius: 20,
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={{ flex: 1 }}
+      >
+        <ScrollView
+          contentContainerStyle={{
+            flexGrow: 1,
+            justifyContent: 'flex-end',
           }}
+          keyboardShouldPersistTaps="handled"
         >
-          <TextInput
-            placeholder="Title"
-            value={title}
-            onChangeText={setTitle}
-            style={{  marginBottom: 20,marginTop: 50,fontWeight: 'bold',fontSize: 26 }}
-          />
-          <TextInput
-          placeholder="Text"
-          value={text}
-          onChangeText={setText}
-          multiline
-          style={styles.textStyle}
-        />
-          <View style={{marginTop: 100}}>
-          <Button title="Add Note" onPress={handleAddNote} />
-          <Button title="Cancel" onPress={() => setModalVisible(false)} />
+          <View
+            style={{
+              height: screenHeight * 0.75,
+              backgroundColor: '#fff',
+              padding: 20,
+              borderTopLeftRadius: 20,
+              borderTopRightRadius: 20,
+            }}
+          >
+            <TextInput
+              placeholder="Title"
+              value={title}
+              onChangeText={setTitle}
+              style={{
+                marginBottom: 20,
+                marginTop: 50,
+                fontWeight: 'bold',
+                fontSize: 26,
+              }}
+            />
+            <TextInput
+              placeholder="Text"
+              value={text}
+              onChangeText={setText}
+              multiline
+              style={styles.textStyle}
+            />
+            <View style={{ marginTop: 100 }}>
+              <TouchableOpacity onPress={handleAddNote} style={{ alignSelf: 'center' }}>
+                <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#047B4D' }}>
+                  Add Note
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setModalVisible(false)}
+                style={{ alignSelf: 'center', marginTop: 20 }}
+              >
+                <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#047B4D' }}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
-         
-        </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   </TouchableWithoutFeedback>
 </Modal>
